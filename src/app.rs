@@ -1,10 +1,11 @@
 use crate::stations::Station;
 use std::sync::{
     Arc, Mutex,
-    atomic::{AtomicBool, Ordering},
+    atomic::AtomicBool,
 };
 
 #[derive(Debug, Clone, PartialEq)]
+#[allow(dead_code)]
 pub enum StreamStatus {
     Connecting,
     Playing,

@@ -20,14 +20,31 @@ pub fn start_audio_output(
     volume: Arc<Mutex<f32>>,
     is_muted: Arc<AtomicBool>,
 ) -> Result<cpal::Stream> {
+    use crate::stream::{OUTPUT_CHANNELS, OUTPUT_SAMPLE_RATE};
+
     let host = cpal::default_host();
     let device = host
         .default_output_device()
         .ok_or_else(|| anyhow::anyhow!("no audio output device found"))?;
-    let config = device.default_output_config()?;
+
+    // Pin the device to the exact rate + channel count that the stream
+    // thread resamples to. Without this, the device runs at its default
+    // (usually 48 kHz on Linux) while the producer supplies samples at
+    // whatever rate symphonia happens to emit (22 kHz for HE-AAC core),
+    // and the rate mismatch manifests as continuous drift / stutter.
+    let config = cpal::StreamConfig {
+        channels: OUTPUT_CHANNELS as u16,
+        sample_rate: cpal::SampleRate(OUTPUT_SAMPLE_RATE),
+        buffer_size: cpal::BufferSize::Default,
+    };
+    log::info!(
+        "cpal output: {} Hz, {} channels",
+        OUTPUT_SAMPLE_RATE,
+        OUTPUT_CHANNELS
+    );
 
     let stream = device.build_output_stream(
-        &config.into(),
+        &config,
         move |data: &mut [f32], _| {
             let paused = is_paused.load(Ordering::Relaxed);
             let muted = is_muted.load(Ordering::Relaxed);

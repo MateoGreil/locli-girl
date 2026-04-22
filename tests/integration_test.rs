@@ -1,6 +1,8 @@
 use locli_girl::app::AppState;
 use locli_girl::config::Config;
-use locli_girl::stations::{find_by_slug, parse_channel_response, Station};
+use locli_girl::stations::{
+    extract_livestreams_tab_data, find_by_slug, parse_livestreams_tab, Station,
+};
 
 fn sample_stations() -> Vec<Station> {
     vec![
@@ -36,16 +38,30 @@ fn find_by_slug_locates_station() {
     assert!(find_by_slug(&stations, "missing").is_none());
 }
 
+// Regression: end-to-end shape of the current Piped API — a channel
+// response carries only a `tabs` array pointing at the livestreams
+// subtab; that subtab's response is what actually lists live stations.
 #[test]
-fn parse_channel_response_integration() {
-    let json = r#"{
-        "relatedStreams": [
-            {"title": "Lofi Hip Hop Radio 📚 - beats to relax/study to", "url": "/watch?v=abc123", "isLive": true},
-            {"title": "Not live video", "url": "/watch?v=xyz", "isLive": false}
+fn livestreams_tab_flow_integration() {
+    let channel_json = r#"{
+        "relatedStreams": [],
+        "tabs": [
+            {"name": "shorts", "data": "shorts-blob"},
+            {"name": "livestreams", "data": "live-blob"}
         ]
     }"#;
-    let stations = parse_channel_response(json).unwrap();
+    let tab_data = extract_livestreams_tab_data(channel_json).unwrap();
+    assert_eq!(tab_data, "live-blob");
+
+    let tab_json = r#"{
+        "nextpage": null,
+        "content": [
+            {"title": "lofi hip hop radio 📚 - beats to relax/study to", "url": "/watch?v=jfKfPfyJRdk", "duration": -1},
+            {"title": "Past live",                                       "url": "/watch?v=oldvid",      "duration": 10800}
+        ]
+    }"#;
+    let stations = parse_livestreams_tab(tab_json).unwrap();
     assert_eq!(stations.len(), 1);
-    assert_eq!(stations[0].video_id, "abc123");
-    assert!(!stations[0].slug.is_empty());
+    assert_eq!(stations[0].video_id, "jfKfPfyJRdk");
+    assert_eq!(stations[0].slug, "lofi-hip-hop-radio-beats-to-relax-study-to");
 }

@@ -17,21 +17,26 @@ jobs:
     name: fmt + clippy + test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # Absolute URLs so this works on Gitea/Forgejo Actions runners
+      # whose action mirror only proxies the `actions/*` org.
+      - uses: https://github.com/actions/checkout@v4
 
       - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable
+        uses: https://github.com/dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
 
       - name: Install system deps
         # cpal needs ALSA; souvlaki (MPRIS) needs D-Bus.
+        # Use sudo only when we're not already root (act_runner
+        # containers typically run as root and often ship without sudo).
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
+          if [ "$(id -u)" -ne 0 ]; then SUDO=sudo; fi
+          $SUDO apt-get update
+          $SUDO apt-get install -y --no-install-recommends \
             libasound2-dev libdbus-1-dev pkg-config
 
-      - uses: Swatinem/rust-cache@v2
+      - uses: https://github.com/Swatinem/rust-cache@v2
 
       - name: cargo fmt --check
         run: cargo fmt --all -- --check

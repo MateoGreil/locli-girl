@@ -23,7 +23,10 @@ jobs:
   audit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: taiki-e/install-action@cargo-audit
+      # Absolute URLs so this works on Gitea/Forgejo Actions runners
+      # whose action mirror (data.forgejo.org) only proxies the
+      # `actions/*` org — not dtolnay/, taiki-e/, etc.
+      - uses: https://github.com/actions/checkout@v4
+      - uses: https://github.com/dtolnay/rust-toolchain@stable
+      - uses: https://github.com/taiki-e/install-action@cargo-audit
       - run: cargo audit --deny warnings

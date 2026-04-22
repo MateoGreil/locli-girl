@@ -1,6 +1,7 @@
 use crate::app::{AppState, ControlMsg, StreamStatus};
-use crate::hls::{parse_media_playlist, resolve_media_playlist_url};
+use crate::hls::{new_segments_since, resolve_media_playlist_url};
 use crate::piped::resolve_hls_url;
+use crate::ts::extract_aac_from_ts;
 use anyhow::Result;
 use crossbeam_channel::Receiver;
 use std::collections::{HashSet, VecDeque};
@@ -69,9 +70,7 @@ fn stream_station(
         }
 
         let playlist_text = client.get(&media_url).send()?.text()?;
-        let (seg_urls, _) = parse_media_playlist(&playlist_text);
-        let new_segs: Vec<String> =
-            seg_urls.into_iter().filter(|u| !seen.contains(u)).collect();
+        let (new_segs, _ended) = new_segments_since(&media_url, &playlist_text, &seen);
 
         for seg_url in new_segs {
             if let Ok(msg) = ctrl_rx.try_recv() {
@@ -124,7 +123,10 @@ fn push_samples(
 }
 
 pub fn decode_segment(data: &[u8]) -> Result<Vec<f32>> {
-    let cursor = Cursor::new(data.to_vec());
+    // Piped's HLS segments are MPEG-TS — symphonia can't demux that,
+    // so strip the TS framing and feed the raw ADTS AAC payload.
+    let aac = extract_aac_from_ts(data)?;
+    let cursor = Cursor::new(aac);
     let mss = MediaSourceStream::new(Box::new(cursor), Default::default());
     let mut hint = Hint::new();
     hint.with_extension("aac");

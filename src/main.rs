@@ -6,6 +6,7 @@ mod piped;
 mod player;
 mod stations;
 mod stream;
+mod ts;
 mod tui;
 mod visualizer;
 

@@ -1,0 +1,23 @@
+# cargo-audit configuration.
+#
+# CI runs `cargo audit --deny warnings`, which treats advisories AND
+# informational warnings (unmaintained, unsound) as failures. The two
+# entries below are accepted warnings pulled in transitively by
+# ratatui 0.28; both would require a ratatui major-version bump to
+# clear, which is out of scope for this vibe-coded project right now.
+# Revisit when upgrading ratatui — delete the matching line if the new
+# release drops the offending transitive.
+
+[advisories]
+ignore = [
+    # `paste` crate is unmaintained. Used by ratatui's macro helpers.
+    # Not a vulnerability, just deprecation. Safe to accept until
+    # ratatui >=0.29 (which stops pulling it).
+    "RUSTSEC-2024-0436",
+
+    # `lru::IterMut` is unsound (invalidates internal pointer, UB
+    # under Stacked Borrows). Reached from ratatui's internal line
+    # cache; our code doesn't invoke iter_mut() on LruCache directly.
+    # Accept until ratatui drops or pins a fixed `lru`.
+    "RUSTSEC-2026-0002",
+]

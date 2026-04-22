@@ -165,11 +165,7 @@ https://cdn.example.com/seg1.aac\n\
 
     #[test]
     fn join_url_resolves_plain_relative_reference_against_directory() {
-        let joined = join_url(
-            "https://cdn.example/stream/master.m3u8",
-            "segment_001.aac",
-        )
-        .unwrap();
+        let joined = join_url("https://cdn.example/stream/master.m3u8", "segment_001.aac").unwrap();
         assert_eq!(joined, "https://cdn.example/stream/segment_001.aac");
     }
 

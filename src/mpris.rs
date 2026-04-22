@@ -1,7 +1,7 @@
 use crate::app::AppState;
 use anyhow::Result;
 use souvlaki::{MediaControlEvent, MediaControls, MediaMetadata, PlatformConfig};
-use std::sync::{Arc, atomic::Ordering};
+use std::sync::{atomic::Ordering, Arc};
 
 pub fn start_mpris(state: Arc<AppState>) -> Result<MediaControls> {
     let config = PlatformConfig {

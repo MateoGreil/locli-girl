@@ -5,11 +5,11 @@ use crate::visualizer::compute_bars;
 use anyhow::Result;
 use crossbeam_channel::Sender;
 use crossterm::{
-    ExecutableCommand,
     event::{self, Event, KeyCode},
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+    ExecutableCommand,
 };
-use ratatui::{Terminal, backend::CrosstermBackend};
+use ratatui::{backend::CrosstermBackend, Terminal};
 use std::io::stdout;
 use std::sync::atomic::Ordering;
 use std::time::Duration;

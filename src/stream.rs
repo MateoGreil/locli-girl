@@ -6,7 +6,7 @@ use anyhow::Result;
 use crossbeam_channel::Receiver;
 use std::collections::{HashSet, VecDeque};
 use std::io::Cursor;
-use std::sync::{Arc, Mutex, atomic::Ordering};
+use std::sync::{atomic::Ordering, Arc, Mutex};
 use std::time::Duration;
 use symphonia::core::audio::SampleBuffer;
 use symphonia::core::codecs::DecoderOptions;
@@ -195,8 +195,8 @@ pub fn decode_segment(data: &[u8]) -> Result<Vec<f32>> {
     let track = format
         .default_track()
         .ok_or_else(|| anyhow::anyhow!("no audio track in segment"))?;
-    let mut decoder = symphonia::default::get_codecs()
-        .make(&track.codec_params, &DecoderOptions::default())?;
+    let mut decoder =
+        symphonia::default::get_codecs().make(&track.codec_params, &DecoderOptions::default())?;
 
     let mut all_samples: Vec<f32> = Vec::new();
     let mut source_spec: Option<(u32, usize)> = None;
@@ -223,8 +223,7 @@ pub fn decode_segment(data: &[u8]) -> Result<Vec<f32>> {
                     );
                     (spec.rate, spec.channels.count())
                 });
-                let mut sample_buf =
-                    SampleBuffer::<f32>::new(decoded.capacity() as u64, spec);
+                let mut sample_buf = SampleBuffer::<f32>::new(decoded.capacity() as u64, spec);
                 sample_buf.copy_interleaved_ref(decoded);
                 all_samples.extend_from_slice(sample_buf.samples());
             }
@@ -233,7 +232,8 @@ pub fn decode_segment(data: &[u8]) -> Result<Vec<f32>> {
         }
     }
 
-    let (in_rate, in_channels) = source_spec.ok_or_else(|| anyhow::anyhow!("no audio frames decoded"))?;
+    let (in_rate, in_channels) =
+        source_spec.ok_or_else(|| anyhow::anyhow!("no audio frames decoded"))?;
     Ok(resample_interleaved(
         &all_samples,
         in_rate,
@@ -290,7 +290,10 @@ fn convert_channels(samples: &[f32], in_ch: usize, out_ch: usize) -> Vec<f32> {
     }
     match (in_ch, out_ch) {
         (1, 2) => samples.iter().flat_map(|&s| [s, s]).collect(),
-        (2, 1) => samples.chunks_exact(2).map(|c| 0.5 * (c[0] + c[1])).collect(),
+        (2, 1) => samples
+            .chunks_exact(2)
+            .map(|c| 0.5 * (c[0] + c[1]))
+            .collect(),
         _ => {
             // Fallback: take first `out_ch` channels of each input frame,
             // or duplicate the last if fewer are available. Not exactly
@@ -356,11 +359,18 @@ mod tests {
         let segs: Vec<String> = (0..6).map(|i| format!("https://h/s{}.ts", i)).collect();
         let mut seen = HashSet::new();
         let kept = take_live_tail(segs.clone(), 2, &mut seen);
-        assert_eq!(kept, vec!["https://h/s4.ts".to_string(), "https://h/s5.ts".to_string()]);
+        assert_eq!(
+            kept,
+            vec!["https://h/s4.ts".to_string(), "https://h/s5.ts".to_string()]
+        );
         // The four skipped segments must be remembered as seen so a
         // follow-up poll does not replay them.
         for i in 0..4 {
-            assert!(seen.contains(&format!("https://h/s{}.ts", i)), "s{} not marked seen", i);
+            assert!(
+                seen.contains(&format!("https://h/s{}.ts", i)),
+                "s{} not marked seen",
+                i
+            );
         }
         assert_eq!(seen.len(), 4);
     }

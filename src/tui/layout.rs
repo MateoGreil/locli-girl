@@ -1,10 +1,10 @@
 use crate::app::{AppState, StreamStatus};
 use ratatui::{
-    Frame,
     layout::{Constraint, Direction, Layout, Rect},
     style::{Modifier, Style},
     text::{Line, Span},
     widgets::{Block, Borders, List, ListItem, ListState, Paragraph},
+    Frame,
 };
 use std::sync::atomic::Ordering;
 
@@ -29,7 +29,12 @@ pub fn render_sidebar(frame: &mut Frame, area: Rect, state: &AppState, bars: &[f
         Span::raw("  "),
         Span::styled(status_text, Style::default().add_modifier(Modifier::BOLD)),
     ]));
-    let header_area = Rect { x: right.x, y: right.y, width: right.width, height: 1 };
+    let header_area = Rect {
+        x: right.x,
+        y: right.y,
+        width: right.width,
+        height: 1,
+    };
     frame.render_widget(header, header_area);
 
     let viz_area = Rect {
@@ -113,11 +118,20 @@ fn render_vol_hints(frame: &mut Frame, area: Rect, state: &AppState) {
     }
     let vol_pct = state.volume_pct();
     let muted = state.is_muted.load(Ordering::Relaxed);
-    let filled = if muted { 0 } else { (vol_pct as usize * 20 / 100).min(20) };
+    let filled = if muted {
+        0
+    } else {
+        (vol_pct as usize * 20 / 100).min(20)
+    };
     let vol_str = if muted {
         "VOL [muted]              ".to_string()
     } else {
-        format!("VOL [{}{}] {}%", "█".repeat(filled), "░".repeat(20 - filled), vol_pct)
+        format!(
+            "VOL [{}{}] {}%",
+            "█".repeat(filled),
+            "░".repeat(20 - filled),
+            vol_pct
+        )
     };
     let vol_area = Rect {
         x: area.x + 1,
@@ -143,7 +157,11 @@ fn render_station_list(frame: &mut Frame, area: Rect, state: &AppState) {
         .iter()
         .enumerate()
         .map(|(i, s)| {
-            let prefix = if i == state.active_station_idx { "▶ " } else { "  " };
+            let prefix = if i == state.active_station_idx {
+                "▶ "
+            } else {
+                "  "
+            };
             ListItem::new(format!("{}{}", prefix, s.name))
         })
         .collect();
@@ -173,8 +191,16 @@ mod tests {
 
     fn sample_stations() -> Vec<Station> {
         vec![
-            Station { name: "Station A".into(), slug: "a".into(), video_id: "1".into() },
-            Station { name: "Station B".into(), slug: "b".into(), video_id: "2".into() },
+            Station {
+                name: "Station A".into(),
+                slug: "a".into(),
+                video_id: "1".into(),
+            },
+            Station {
+                name: "Station B".into(),
+                slug: "b".into(),
+                video_id: "2".into(),
+            },
         ]
     }
 
@@ -186,21 +212,24 @@ mod tests {
     fn render_immersive_does_not_panic() {
         let mut t = terminal(80, 24);
         let state = AppState::new(sample_stations(), 0, 75);
-        t.draw(|f| render_immersive(f, f.area(), &state, &[])).unwrap();
+        t.draw(|f| render_immersive(f, f.area(), &state, &[]))
+            .unwrap();
     }
 
     #[test]
     fn render_sidebar_does_not_panic() {
         let mut t = terminal(80, 24);
         let state = AppState::new(sample_stations(), 0, 75);
-        t.draw(|f| render_sidebar(f, f.area(), &state, &[])).unwrap();
+        t.draw(|f| render_sidebar(f, f.area(), &state, &[]))
+            .unwrap();
     }
 
     #[test]
     fn render_tiny_terminal_does_not_panic() {
         let mut t = terminal(10, 3);
         let state = AppState::new(sample_stations(), 0, 75);
-        t.draw(|f| render_immersive(f, f.area(), &state, &[])).unwrap();
+        t.draw(|f| render_immersive(f, f.area(), &state, &[]))
+            .unwrap();
     }
 
     #[test]
@@ -208,6 +237,7 @@ mod tests {
         let mut t = terminal(80, 24);
         let state = AppState::new(sample_stations(), 0, 75);
         let bars: Vec<f32> = (0..32).map(|i| i as f32 / 32.0).collect();
-        t.draw(|f| render_immersive(f, f.area(), &state, &bars)).unwrap();
+        t.draw(|f| render_immersive(f, f.area(), &state, &bars))
+            .unwrap();
     }
 }

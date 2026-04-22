@@ -54,7 +54,12 @@ pub fn extract_livestreams_tab_data(json: &str) -> Result<String> {
 /// and return currently-live stations (duration == -1).
 pub fn parse_livestreams_tab(json: &str) -> Result<Vec<Station>> {
     let tab: TabResponse = serde_json::from_str(json)?;
-    Ok(tab.content.into_iter().filter(is_live).filter_map(to_station).collect())
+    Ok(tab
+        .content
+        .into_iter()
+        .filter(is_live)
+        .filter_map(to_station)
+        .collect())
 }
 
 pub fn find_by_slug<'a>(stations: &'a [Station], slug: &str) -> Option<&'a Station> {
@@ -71,7 +76,11 @@ pub fn slugify(title: &str) -> String {
         .collect::<Vec<_>>()
         .join("-")
         .to_lowercase();
-    if result.is_empty() { "unknown".to_string() } else { result }
+    if result.is_empty() {
+        "unknown".to_string()
+    } else {
+        result
+    }
 }
 
 fn is_live(s: &StreamEntry) -> bool {
@@ -104,7 +113,10 @@ mod tests {
 
     #[test]
     fn slugify_strips_emojis_and_special_chars() {
-        assert_eq!(slugify("lofi hip hop radio 📚 - beats"), "lofi-hip-hop-radio-beats");
+        assert_eq!(
+            slugify("lofi hip hop radio 📚 - beats"),
+            "lofi-hip-hop-radio-beats"
+        );
     }
 
     #[test]
@@ -126,8 +138,16 @@ mod tests {
     #[test]
     fn find_by_slug_returns_correct_station() {
         let stations = vec![
-            Station { name: "A".into(), slug: "a".into(), video_id: "1".into() },
-            Station { name: "B".into(), slug: "b".into(), video_id: "2".into() },
+            Station {
+                name: "A".into(),
+                slug: "a".into(),
+                video_id: "1".into(),
+            },
+            Station {
+                name: "B".into(),
+                slug: "b".into(),
+                video_id: "2".into(),
+            },
         ];
         assert_eq!(find_by_slug(&stations, "b").unwrap().video_id, "2");
         assert!(find_by_slug(&stations, "c").is_none());
@@ -146,7 +166,10 @@ mod tests {
                 {"name": "albums", "data": "albums-data-blob"}
             ]
         }"#;
-        assert_eq!(extract_livestreams_tab_data(json).unwrap(), "live-data-blob");
+        assert_eq!(
+            extract_livestreams_tab_data(json).unwrap(),
+            "live-data-blob"
+        );
     }
 
     #[test]

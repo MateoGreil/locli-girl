@@ -2,8 +2,8 @@ use anyhow::Result;
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use std::collections::VecDeque;
 use std::sync::{
-    Arc, Mutex,
     atomic::{AtomicBool, Ordering},
+    Arc, Mutex,
 };
 
 pub fn apply_volume(samples: &mut [f32], volume: f32, muted: bool) {
@@ -51,7 +51,11 @@ pub fn start_audio_output(
             let vol = *volume.lock().unwrap();
             let mut buf = audio_buf.lock().unwrap();
             for sample in data.iter_mut() {
-                *sample = if paused { 0.0 } else { buf.pop_front().unwrap_or(0.0) };
+                *sample = if paused {
+                    0.0
+                } else {
+                    buf.pop_front().unwrap_or(0.0)
+                };
             }
             drop(buf);
             apply_volume(data, vol, muted);

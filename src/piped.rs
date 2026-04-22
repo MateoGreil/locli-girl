@@ -48,12 +48,10 @@ pub fn resolve_hls_url(video_id: &str) -> Result<String> {
     for &instance in PIPED_INSTANCES {
         let url = format!("https://{}/streams/{}", instance, video_id);
         match client.get(&url).send() {
-            Ok(resp) if resp.status().is_success() => {
-                match extract_hls_url(&resp.text()?) {
-                    Ok(hls) => return Ok(hls),
-                    Err(e) => last_err = e,
-                }
-            }
+            Ok(resp) if resp.status().is_success() => match extract_hls_url(&resp.text()?) {
+                Ok(hls) => return Ok(hls),
+                Err(e) => last_err = e,
+            },
             Ok(resp) => last_err = anyhow!("{} returned {}", instance, resp.status()),
             Err(e) => last_err = anyhow!("{} unreachable: {}", instance, e),
         }
@@ -77,7 +75,10 @@ mod tests {
     #[test]
     fn extracts_hls_url_from_json() {
         let json = r#"{"hls": "https://example.com/stream.m3u8", "title": "Test"}"#;
-        assert_eq!(extract_hls_url(json).unwrap(), "https://example.com/stream.m3u8");
+        assert_eq!(
+            extract_hls_url(json).unwrap(),
+            "https://example.com/stream.m3u8"
+        );
     }
 
     #[test]

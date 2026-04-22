@@ -71,7 +71,10 @@ mod tests {
     fn round_trip_save_load() {
         let dir = tempdir().unwrap();
         let path = dir.path().join("config.toml");
-        let cfg = Config { last_station_slug: "synthwave".to_string(), volume: 55 };
+        let cfg = Config {
+            last_station_slug: "synthwave".to_string(),
+            volume: 55,
+        };
         cfg.save_to(&path).unwrap();
         let loaded = Config::load_from(&path).unwrap();
         assert_eq!(loaded.last_station_slug, "synthwave");

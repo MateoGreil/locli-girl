@@ -6,8 +6,16 @@ use locli_girl::stations::{
 
 fn sample_stations() -> Vec<Station> {
     vec![
-        Station { name: "A".into(), slug: "a".into(), video_id: "v1".into() },
-        Station { name: "B".into(), slug: "b".into(), video_id: "v2".into() },
+        Station {
+            name: "A".into(),
+            slug: "a".into(),
+            video_id: "v1".into(),
+        },
+        Station {
+            name: "B".into(),
+            slug: "b".into(),
+            video_id: "v2".into(),
+        },
     ]
 }
 
@@ -63,5 +71,8 @@ fn livestreams_tab_flow_integration() {
     let stations = parse_livestreams_tab(tab_json).unwrap();
     assert_eq!(stations.len(), 1);
     assert_eq!(stations[0].video_id, "jfKfPfyJRdk");
-    assert_eq!(stations[0].slug, "lofi-hip-hop-radio-beats-to-relax-study-to");
+    assert_eq!(
+        stations[0].slug,
+        "lofi-hip-hop-radio-beats-to-relax-study-to"
+    );
 }

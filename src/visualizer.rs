@@ -9,9 +9,8 @@ pub fn compute_bars(samples: &[f32], n_bars: usize, _sample_rate: f32) -> Vec<f3
     let mut buffer: Vec<Complex<f32>> = (0..fft_size)
         .map(|i| {
             let s = samples.get(i).copied().unwrap_or(0.0);
-            let w = 0.5
-                * (1.0
-                    - (2.0 * std::f32::consts::PI * i as f32 / (fft_size - 1) as f32).cos());
+            let w =
+                0.5 * (1.0 - (2.0 * std::f32::consts::PI * i as f32 / (fft_size - 1) as f32).cos());
             Complex::new(s * w, 0.0)
         })
         .collect();
@@ -84,6 +83,10 @@ mod tests {
             .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
             .unwrap()
             .0;
-        assert!(peak < 8, "440 Hz should peak in first quarter of bars, got bar {}", peak);
+        assert!(
+            peak < 8,
+            "440 Hz should peak in first quarter of bars, got bar {}",
+            peak
+        );
     }
 }

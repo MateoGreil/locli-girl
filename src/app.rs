@@ -1,8 +1,5 @@
 use crate::stations::Station;
-use std::sync::{
-    Arc, Mutex,
-    atomic::AtomicBool,
-};
+use std::sync::{atomic::AtomicBool, Arc, Mutex};
 
 #[derive(Debug, Clone, PartialEq)]
 #[allow(dead_code)]
@@ -78,8 +75,16 @@ mod tests {
 
     fn sample_stations() -> Vec<Station> {
         vec![
-            Station { name: "A".into(), slug: "a".into(), video_id: "1".into() },
-            Station { name: "B".into(), slug: "b".into(), video_id: "2".into() },
+            Station {
+                name: "A".into(),
+                slug: "a".into(),
+                video_id: "1".into(),
+            },
+            Station {
+                name: "B".into(),
+                slug: "b".into(),
+                video_id: "2".into(),
+            },
         ]
     }
 

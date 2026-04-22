@@ -117,8 +117,7 @@ fn parse_pmt_first_audio(payload: &[u8], pusi: bool) -> Option<u16> {
     while i + 5 <= end && i + 5 <= section.len() {
         let stream_type = section[i];
         let pid = (((section[i + 1] & 0x1F) as u16) << 8) | section[i + 2] as u16;
-        let es_info_length =
-            (((section[i + 3] & 0x0F) as usize) << 8) | section[i + 4] as usize;
+        let es_info_length = (((section[i + 3] & 0x0F) as usize) << 8) | section[i + 4] as usize;
         if stream_type == STREAM_TYPE_AAC_ADTS {
             return Some(pid);
         }
@@ -161,7 +160,10 @@ mod tests {
     /// extract exactly the `payload` bytes.
     fn ts_packet(pid: u16, pusi: bool, cc: u8, payload: &[u8]) -> [u8; TS_PACKET_SIZE] {
         const SPACE: usize = TS_PACKET_SIZE - 4;
-        assert!(payload.len() <= SPACE, "payload too big for single TS packet");
+        assert!(
+            payload.len() <= SPACE,
+            "payload too big for single TS packet"
+        );
         let mut p = [0xFFu8; TS_PACKET_SIZE];
         p[0] = SYNC_BYTE;
         p[1] = ((pusi as u8) << 6) | (((pid >> 8) as u8) & 0x1F);
@@ -335,7 +337,12 @@ mod tests {
         let mut ts = Vec::new();
         ts.extend_from_slice(&ts_packet(0, true, 0, &pat_payload_for(1, pmt_pid)));
         // PMT with only video, no AAC entry:
-        ts.extend_from_slice(&ts_packet(pmt_pid, true, 0, &pmt_payload_for(&[(0x1B, 0x200)])));
+        ts.extend_from_slice(&ts_packet(
+            pmt_pid,
+            true,
+            0,
+            &pmt_payload_for(&[(0x1B, 0x200)]),
+        ));
         assert!(extract_aac_from_ts(&ts).is_err());
     }
 
